@@ -1,0 +1,24 @@
+name: Verify GPG Signed Commits
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check-signatures:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Verify commits are GPG signed
+        run: |
+          git fetch --unshallow || true
+          git log --pretty="%H %G?" | while read commit status; do
+            if [ "$status" != "G" ]; then
+              echo "❌ Commit $commit is not GPG signed!"
+              exit 1
+            fi
+          done
